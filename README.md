@@ -31,46 +31,25 @@ builds `odstream.lib` and `odstream_s.lib`. `odstream.lib` is for `-MD` runtime 
         yak::debug::ods() << "Trace messages"; yak::debug::ods().flush();
         // yak::debug::ods() << "Trace messages" << std::flush; // requires #include <iostream>
 
-    If `DEBUG` macro is defined, the message is output by `OutputDebugString()` when a flush occurs. Otherwise, ignored.  Instead of calling `yak::debug::ods().flush()`, you can flush by using stream manipulators like `std::flush` and `std::endl`. However, such manipulators require including `iostream` header reagardless whether `DEBUG` is defined or not, and it might cause a burden of executable size.
+    If `YAK_DEBUG_EVAL` macro is defined, the message is output by `OutputDebugString()` when a flush occurs. Otherwise, ignored.  Instead of calling `yak::debug::ods().flush()`, you can flush by using stream manipulators like `std::flush` and `std::endl`. However, such manipulators require including `iostream` header reagardless whether `YAK_DEBUG_EVAL` is defined or not, and it might cause a burden of executable size.
 
-    If you want to output messages regardless of whether `DEBUG` marcro is defined or not, you can use `yak::debug_yes::ods()`.
+    If you want to output messages regardless of whether `YAK_DEBUG_EVAL` marcro is defined or not, you can use `yak::debug_yes::ods()`.
 
 2. Macro style
 
         ODS_NOFLUSH(<< "Trace messages1"); // without flush
         ODS(<< "Trace messages2"); // with flush
 
-    This is simliar as direct style but needs not including `iostream` when `DEBUG` is not defined, even if manipulators are used.
-
-    To tell the truth, including `iostream` when `DEBUG` is defined is done by `odstream.hpp` header, so you need not it by yourself. To define `ODSTREAM_NO_INCLUDE_IOSTREAM` suppresses this behavior.
+    This is simliar as direct style but needs not including `iostream` when `YAK_DEBUG_EVAL` is not defined, even if manipulators are used.
 
 Notes
 -----
 
-### executable size ###
+### modified from original ###
 
-Here are examples of executable size in bytes. These vary in different options and environments, especially for header-only usage.
+Modifications include provisions for thread safety and wchar_t support, and the choice for `YAK_DEBUG_EVAL` over `DEBUG`.
 
-#### GCC-6.3.0 with -O2 on Cygwin, stripped ####
-
-Cygwin     |header-only<br>DEBUG|header-only<br>no DEBUG|no header-only<br>DEBUG|no header-only<br>no DEBUG|blank main
------------|---------|---------|---------|---------|---------
-normal     |  13,838 |   8,718 |  15,886 |   8,718 |   8,718
-static link| 934,414 | 886,798 | 934,926 |   8,718 |   8,718
-
-#### VC14(VS2015) ####
-
-VC14       |header-only<br>DEBUG|header-only<br>no DEBUG|no header-only<br>DEBUG|no header-only<br>no DEBUG|blank main
------------|---------|---------|---------|---------|---------
-normal     |  27,648 |   8,704 |  28,672 |   8,704 |   8,192
-static link| 179,200 |  74,752 | 179,712 |  74,752 |  74,752
-
-#### VC11(VS2012) ####
-
-VC11       |header-only<br>DEBUG|header-only<br>no DEBUG|no header-only<br>DEBUG|no header-only<br>no DEBUG|blank main
------------|---------|---------|---------|---------|---------
-normal     |  23,040 |  12,800 |  25,088 |   6,144 |   6,144
-static link| 153,088 |  74,752 | 154,112 |  52,224 |  52,224
+See [https://github.com/yak1ex/odstream](https://github.com/yak1ex/odstream) for original code.
 
 ### namespace alias and implementation switch ###
 
@@ -80,7 +59,7 @@ static link| 153,088 |  74,752 | 154,112 |  52,224 |  52,224
 
  If these limitations are actual concerns, we can use inline namespace introduced in C++11 like the followings:
 ```cpp
-#ifdef DEBUG
+#ifdef YAK_DEBUG_EVAL
 #define INLINE_YES inline
 #define INLINE_NO
 #else
