@@ -7,52 +7,25 @@
 /*     This software is distributed under the terms of a zlib/libpng   */
 /*     License.                                                        */
 /*                                                                     */
-/*     $Id: 6513ed3a9f23aca93b18470eacbced77a34566dd $                 */
+/*     Modified from https://github.com/yak1ex/odstream                */
 /*                                                                     */
 /***********************************************************************/
-
-#include <sstream>
-#include <windows.h>
 
 #define YAK_DEBUG_NO_HEADER_ONLY
 #include "odstream.hpp"
 
-namespace yak {
+std::ostream& yak::debug_yes::ods() {
+	return stream_singleton<debug_yes_impl::odstringbuf>::instance();
+}
 
-    namespace debug_yes {
+std::wostream& yak::debug_yes::odw() {
+	return stream_singleton<debug_yes_impl::wodstringbuf>::instance();
+}
 
-		class debug_yes_impl::odstringbuf : public std::stringbuf
-		{
-		protected:
-			virtual int sync(void) {
-				OutputDebugString(str().c_str());
-				str("");
-				return 0;
-			}
-		};
-		debug_yes_impl::odstringbuf& debug_yes_impl::odsbuf() {
-			static odstringbuf odsbuf_;
-			return odsbuf_;
-		}
-		std::ostream& debug_yes_impl::ods() {
-			static std::ostream ods_(&debug_yes_impl::odsbuf());
-			return ods_;
-		}
+std::ostream& yak::debug_no::pseudo_null_stream<char>::null_stream() {
+	return stream_singleton<nullstreambuf>::instance();
+}
 
-	} // namespace debug_yes
-
-	namespace debug_no {
-
-		class pseudo_null_stream::nullstreambuf : public std::streambuf {};
-		pseudo_null_stream::nullstreambuf& pseudo_null_stream::nullbuf() {
-			static pseudo_null_stream::nullstreambuf nullbuf_;
-			return nullbuf_;
-		}
-		std::ostream& pseudo_null_stream::null_stream() {
-			static std::ostream null_stream_(&nullbuf());
-			return null_stream_;
-		}
-
-	} // namespace debug_no
-
-} // namespace yak
+std::wostream& yak::debug_no::pseudo_null_stream<wchar_t>::null_stream() {
+	return stream_singleton<nullstreambuf>::instance();
+}
